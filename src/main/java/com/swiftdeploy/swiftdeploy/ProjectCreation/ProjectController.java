@@ -34,8 +34,8 @@ public class ProjectController {
     }
 
     @GetMapping("/getallprojects")
-    public ResponseEntity<Object> getAllProjects(@RequestHeader String token)
-    {
+    public ResponseEntity<Object> getAllProjects(@RequestHeader String token) {
         return createProject.fetchAllProjects(token);
     }
+
 }

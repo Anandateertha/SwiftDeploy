@@ -46,6 +46,7 @@ public class DeployProject {
 
                 ResponseMessage responseMessage = new ResponseMessage();
                 try {
+
                         DeploymentModel deployment = new DeploymentModel();
 
                         ProjectModel project = projectRepository.findById(UUID.fromString(projectId)).orElse(null);
@@ -54,11 +55,23 @@ public class DeployProject {
                                 return ResponseEntity.status(404).body(responseMessage);
                         }
 
-                        UUID randomId = UUID.randomUUID();
-                        UUID id = randomId;
-                        deployment.setDeploymentId(id);
-                        deployment.setProject(project);
-                        deployment.setCreatedAt(LocalDate.now());
+                        DeploymentModel deploymentExists = deploymentRepository.findByProject(project);
+                        UUID id;
+
+                        if (deploymentExists != null) {
+
+                                id = deploymentExists.getDeploymentId();
+                                responseMessage.setSuccess(true);
+                                responseMessage.setMessage(
+                                                "Deployment already exists. Overwriting with the latest changes");
+
+                        } else {
+                                UUID randomId = UUID.randomUUID();
+                                id = randomId;
+                                deployment.setDeploymentId(id);
+                                deployment.setProject(project);
+                                deployment.setCreatedAt(LocalDate.now());
+                        }
 
                         List<KeyValuePair> envVariables = new ArrayList<>();
                         envVariables.add(
@@ -73,7 +86,8 @@ public class DeployProject {
                                         .value(System.getenv("AWS_SECRET_KEY")).build());
 
                         envVariables.add(KeyValuePair.builder().name("GIT_URL")
-                                        .value(projectRepository.findByProjectId(UUID.fromString(projectId)).getGitURL())
+                                        .value(projectRepository.findByProjectId(UUID.fromString(projectId))
+                                                        .getGitURL())
                                         .build());
 
                         envVariables.add(KeyValuePair.builder().name("USER_ID")
@@ -117,11 +131,14 @@ public class DeployProject {
 
                         ECSClientService.ecsClient.runTask(runTaskRequest);
 
-                        deploymentRepository.save(deployment);
-
-                        responseMessage.setSuccess(true);
-                        responseMessage.setMessage("Deployment created successfully");
-                        return ResponseEntity.status(200).body(responseMessage);
+                        if (deploymentExists != null) {
+                                return ResponseEntity.status(200).body(responseMessage);
+                        } else {
+                                deploymentRepository.save(deployment);
+                                responseMessage.setSuccess(true);
+                                responseMessage.setMessage("Deployment created successfully");
+                                return ResponseEntity.status(200).body(responseMessage);
+                        }
 
                 } catch (Exception e) {
                         responseMessage.setSuccess(false);
