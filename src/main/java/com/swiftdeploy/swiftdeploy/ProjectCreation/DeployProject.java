@@ -3,6 +3,7 @@ package com.swiftdeploy.swiftdeploy.ProjectCreation;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,8 @@ public class DeployProject {
         @Autowired
         private AuthService authService;
 
-        public ResponseEntity<ResponseMessage> createDeployService(String projectId, String token) {
+        public ResponseEntity<ResponseMessage> createDeployService(String projectId, String token,
+                        Map<String, String> envVariablesByClient) {
 
                 ResponseMessage responseMessage = new ResponseMessage();
                 try {
@@ -100,6 +102,11 @@ public class DeployProject {
 
                         envVariables.add(KeyValuePair.builder().name("DEPLOYMENT_ID")
                                         .value(id.toString()).build());
+
+                        for (Map.Entry<String, String> entry : envVariablesByClient.entrySet()) {
+                                envVariables.add(KeyValuePair.builder().name(entry.getKey()).value(entry.getValue())
+                                                .build());
+                        }
 
                         String existingTaskDefinitionArn = "arn:aws:ecs:" + System.getenv("REGION") + ":"
                                         + System.getenv("ACCOUNT_ID") + ":task-definition/"

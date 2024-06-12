@@ -1,5 +1,7 @@
 package com.swiftdeploy.swiftdeploy.ProjectCreation;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,8 +31,9 @@ public class ProjectController {
     }
 
     @PostMapping("/deploy")
-    public ResponseEntity<ResponseMessage> deployProject(@RequestHeader String projectId, @RequestHeader String token) {
-        return deployProject.createDeployService(projectId, token);
+    public ResponseEntity<ResponseMessage> deployProject(@RequestHeader String projectId, @RequestHeader String token,
+            @RequestBody Map<String, String> envVariablesByClient) {
+        return deployProject.createDeployService(projectId, token, envVariablesByClient);
     }
 
     @GetMapping("/getallprojects")
