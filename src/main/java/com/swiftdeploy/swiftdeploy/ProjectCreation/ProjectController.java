@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.swiftdeploy.swiftdeploy.Middlewares.SlugGenerator;
 import com.swiftdeploy.swiftdeploy.Models.ProjectModel;
 import com.swiftdeploy.swiftdeploy.Models.ResponseMessage;
 
@@ -23,6 +24,9 @@ public class ProjectController {
 
     @Autowired
     private DeployProject deployProject;
+
+    @Autowired
+    private SlugGenerator slugGenerator;
 
     @PostMapping("createproject")
     public ResponseEntity<ResponseMessage> createproject(@RequestBody ProjectModel project,
@@ -39,6 +43,12 @@ public class ProjectController {
     @GetMapping("/getallprojects")
     public ResponseEntity<Object> getAllProjects(@RequestHeader String token) {
         return createProject.fetchAllProjects(token);
+    }
+
+    @GetMapping("getslug")
+    public ResponseEntity<ResponseMessage> generateSlug()
+    {
+        return slugGenerator.reverseProxyMethod();
     }
 
 }
